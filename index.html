@@ -662,7 +662,7 @@ footer{
 </footer>
 
 <script>
-const GROQ_API_KEY = 'YOUR_API_KEY';
+const GROQ_API_KEY = 'YOUR_API_HEY_HERE';
 let results=[], profile={};
 
 function one(el,gid){document.querySelectorAll('#'+gid+' .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on')}
@@ -702,7 +702,7 @@ async function doSearch(){
 
 STUDENT: BSc ${f}, CGPA ${g}, Grad ${y}, From ${o}, English: ${en}, Programs: ${pr}, Countries: ${co}, Requirements: ${rq}, Budget: €${bu}/mo, Notes: ${ex||'none'}
 
-Return JSON array of 6 universities sorted by match_score descending. Each object: name, country, flag (emoji), program (exact MSc title), deadline (e.g. "15 Jul 2026"), fee ("Free" or "€50"), moi (boolean), uniassist (boolean: false=no uni-assist needed), living_cost (e.g. "€650-850/mo"), match_score (0-100 integer), match_reason (2 sentences), watch_out (1 warning sentence), portal (real URL), scholarship (string or null)`;
+Return JSON array of 6 universities sorted by match_score descending. Each object: name, country, flag (emoji), program (exact MSc title), opening_date (application opening date e.g. "1 Oct 2025" or "Nov 2025" or "Rolling"), deadline (application closing date e.g. "15 Jul 2026"), fee ("Free" or "€50"), moi (boolean), uniassist (boolean: false=no uni-assist needed), living_cost (e.g. "€650-850/mo"), match_score (0-100 integer), match_reason (2 sentences), watch_out (1 warning sentence), portal (real URL), scholarship (string or null)`;
 
   btn.disabled=true;
   btn.innerHTML='<span class="spin"></span> Searching universities...';
@@ -780,9 +780,11 @@ function render(unis){
         </div>
         <div class="igrid">
           <div class="ic"><div class="ik">Country</div><div class="iv">${u.flag||''} ${u.country}</div></div>
-          <div class="ic"><div class="ik">Deadline</div><div class="iv">${u.deadline||'Check portal'}</div></div>
           <div class="ic"><div class="ik">App fee</div><div class="iv">${u.fee||'—'}</div></div>
+          <div class="ic"><div class="ik">Opens</div><div class="iv">${u.opening_date||'Check portal'}</div></div>
+          <div class="ic"><div class="ik">Deadline</div><div class="iv">${u.deadline||'Check portal'}</div></div>
           <div class="ic"><div class="ik">Living cost</div><div class="iv">${u.living_cost||'—'}</div></div>
+          <div class="ic"><div class="ik">Scholarship</div><div class="iv">${u.scholarship||'None'}</div></div>
         </div>
         <p class="rtext">${u.match_reason||''}</p>
         ${u.watch_out?`<div class="wbox"><span class="wico">⚠</span><span>${u.watch_out}</span></div>`:''}
@@ -801,11 +803,11 @@ function render(unis){
 function toExcel(){
   if(!results.length)return;
   const{field,gpa,gradyear,origin}=profile;
-  const hdrs=['Rank','University','Country','Program','Match %','Deadline','App Fee','MOI Accepted','Uni-Assist Needed','Living Cost','Scholarship','Why It Matches','Watch Out','Portal URL'];
-  const rows=results.map((u,i)=>[i+1,u.name,u.country,u.program,u.match_score,u.deadline||'—',u.fee||'—',u.moi?'Yes':'No',u.uniassist===false?'No':'Yes',u.living_cost||'—',u.scholarship||'—',u.match_reason||'—',u.watch_out||'—',u.portal||'—']);
+  const hdrs=['Rank','University','Country','Program','Match %','Opens (Application)','Deadline (Closes)','App Fee','MOI Accepted','Uni-Assist Needed','Living Cost','Scholarship','Why It Matches','Watch Out','Portal URL'];
+  const rows=results.map((u,i)=>[i+1,u.name,u.country,u.program,u.match_score,u.opening_date||'—',u.deadline||'—',u.fee||'—',u.moi?'Yes':'No',u.uniassist===false?'No':'Yes',u.living_cost||'—',u.scholarship||'—',u.match_reason||'—',u.watch_out||'—',u.portal||'—']);
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet([['EduPath Europe — University Match Results'],[`Profile: BSc ${field} | GPA: ${gpa} | Grad: ${gradyear} | From: ${origin}`],[`Generated: ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`],[],hdrs,...rows]);
-  ws['!cols']=[{wch:5},{wch:34},{wch:14},{wch:36},{wch:10},{wch:16},{wch:10},{wch:14},{wch:18},{wch:16},{wch:22},{wch:52},{wch:42},{wch:42}];
+  ws['!cols']=[{wch:5},{wch:34},{wch:14},{wch:36},{wch:10},{wch:18},{wch:18},{wch:10},{wch:14},{wch:18},{wch:16},{wch:22},{wch:52},{wch:42},{wch:42}];
   XLSX.utils.book_append_sheet(wb,ws,'Matches');
   XLSX.writeFile(wb,`EduPath_Matches_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
@@ -813,8 +815,8 @@ function toExcel(){
 function toCSV(){
   if(!results.length)return;
   const esc=v=>`"${String(v||'').replace(/"/g,'""')}"`;
-  const hdrs=['Rank','University','Country','Program','Match Score','Deadline','Fee','MOI','Uni-Assist','Living Cost','Scholarship','Why It Matches','Watch Out','Portal'];
-  const rows=results.map((u,i)=>[i+1,u.name,u.country,u.program,u.match_score,u.deadline||'',u.fee||'',u.moi?'Yes':'No',u.uniassist===false?'No':'Yes',u.living_cost||'',u.scholarship||'',u.match_reason||'',u.watch_out||'',u.portal||''].map(esc).join(','));
+  const hdrs=['Rank','University','Country','Program','Match Score','Opens (Application)','Deadline (Closes)','Fee','MOI','Uni-Assist','Living Cost','Scholarship','Why It Matches','Watch Out','Portal'];
+  const rows=results.map((u,i)=>[i+1,u.name,u.country,u.program,u.match_score,u.opening_date||'',u.deadline||'',u.fee||'',u.moi?'Yes':'No',u.uniassist===false?'No':'Yes',u.living_cost||'',u.scholarship||'',u.match_reason||'',u.watch_out||'',u.portal||''].map(esc).join(','));
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+[hdrs.map(esc).join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8'}));
   a.download=`EduPath_Matches_${new Date().toISOString().slice(0,10)}.csv`;a.click();
