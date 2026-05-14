@@ -17,4 +17,4 @@ academic profile, budget, and requirements.
 - SheetJS for Excel export
 
 ## Live Demo
-[View Live →](https://edupatheurope.netlify.app/)
+[View Live →](https://edupatheurope1.netlify.app/)
